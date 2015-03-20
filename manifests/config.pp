@@ -21,13 +21,19 @@ class passenger::config {
         notify  => Service['httpd'],
       }
 
+      if $passenger::compile_passenger == true {
+        $mod_enable_require = [ File['/etc/apache2/mods-available/passenger.load'], Class['passenger::compile'], ]
+      } else {
+        $mod_enable_require = File['/etc/apache2/mods-available/passenger.load']
+      }
+
       file { '/etc/apache2/mods-enabled/passenger.load':
         ensure  => 'link',
         target  => '/etc/apache2/mods-available/passenger.load',
         owner   => '0',
         group   => '0',
         mode    => '0777',
-        require => [ File['/etc/apache2/mods-available/passenger.load'], Class['passenger::compile'], ],
+        require => $mod_enable_require,
         notify  => Service['httpd'],
       }
 
