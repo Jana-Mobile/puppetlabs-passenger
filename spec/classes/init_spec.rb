@@ -15,6 +15,54 @@ describe 'passenger' do
     }
   end
 
+  describe 'with compile_passenger => false' do
+    let(:facts) do
+      { :osfamily => 'redhat', :operatingsystemrelease => '6.4', :concat_basedir => '/dne' }
+    end
+    let(:params) do
+      {
+        :passenger_version      => '3.0.19',
+        :passenger_ruby         => '/opt/bin/ruby',
+        :gem_path               => '/opt/lib/ruby/gems/1.9.1/gems',
+        :gem_binary_path        => '/opt/lib/ruby/bin',
+        :passenger_root         => '/opt/lib/ruby/gems/1.9.1/gems/passenger-3.0.19',
+        :mod_passenger_location => '/opt/lib/ruby/gems/1.9.1/gems/passenger-3.0.19/ext/apache2/mod_passenger.so',
+        :compile_passenger      => false,
+      }
+    end
+
+    it should_not { contain_class('passenger::compile') }
+  end
+
+  describe 'with include_build_tools' do
+    context 'using the default value' do
+      let(:params) { { :include_build_tools => false } }
+
+      it { should_not contain_class('gcc') }
+      it { should_not contain_class('make') }
+      it { should compile.with_all_deps }
+    end
+
+    ['true',true].each do |value|
+      context "specified as #{value}" do
+        let(:params) { { :include_build_tools => value } }
+
+        it { should contain_class('gcc') }
+        it { should contain_class('make') }
+        it { should compile.with_all_deps }
+      end
+    end
+    ['false',false].each do |value|
+      context "specified as #{value}" do
+        let(:params) { { :include_build_tools => value } }
+
+        it { should_not contain_class('gcc') }
+        it { should_not contain_class('make') }
+        it { should compile.with_all_deps }
+      end
+    end
+  end
+
   describe 'on RedHat' do
     let(:facts) do
       { :osfamily => 'redhat', :operatingsystemrelease => '6.4', :concat_basedir => '/dne' }
