@@ -39,6 +39,7 @@ This will establish Passenger on your node with sane default values. However, yo
         gem_binary_path        => '/var/lib/gems/1.8/bin',
         passenger_root         => '/var/lib/gems/1.8/gems/passenger-2.2.11'
         mod_passenger_location => '/var/lib/gems/1.8/gems/passenger-2.2.11/ext/apache2/mod_passenger.so',
+        include_build_tools    => true,
       }
     }
  
@@ -49,29 +50,53 @@ The `passenger` class has a set of configurable parameters that allow you to con
 
 **Parameters within `passenger`**
 
-####`passenger_version`
+####`gem_binary_path`
 
-The Version of Passenger to be installed
+Path to Rubygems binaries on your system
 
 ####`gem_path`
 
 The path to rubygems on your system
 
-####`gem_binary_path`
+####`include_build_tools`
 
-Path to Rubygems binaries on your system
+Boolean to require gcc and make classes. Default is false.
 
 ####`mod_passenger_location`
 
 Path to Passenger's mod_passenger.so file
 
-####`passenger_provider`
+####`package_ensure`
 
-The package provider to use for the system
+Ensure the state of the passenger package
+
+####`package_provider`
+
+Provider to use to install passenger
 
 ####`passenger_package`
 
 The name of the Passenger package
+
+####`passenger_provider`
+
+The package provider to use for the system
+
+####`passenger_root`
+
+Root directory for passenger
+
+####`passenger_ruby`
+
+Allows you to customize what ruby binary is used
+
+####`passenger_version`
+
+The Version of Passenger to be installed
+
+####`compile_passenger`
+
+Whether or not to include the `passenger::compile` class. Defaults to true.
 
 Implementation
 ---------------

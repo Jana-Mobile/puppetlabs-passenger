@@ -1,10 +1,5 @@
 #
-class passenger::config (
-  $mod_passenger_location = $passenger::params::mod_passenger_location,
-  $passenger_root         = $passenger::params::passenger_root,
-  $passenger_ruby         = $passenger::params::passenger_ruby,
-  $passenger_version      = $passenger::params::passenger_version,
-) inherits passenger::params {
+class passenger::config {
 
   case $::osfamily {
     'debian': {

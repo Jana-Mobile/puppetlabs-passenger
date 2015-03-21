@@ -31,23 +31,31 @@
 #   [*passenger_package*]
 #     The name of the Passenger package
 #
+#   [*include_build_tools*]
+#     Boolean to require gcc and make classes. Default is false.
+#
 # Usage:
 #
 #  class { 'passenger':
-#    passenger_version      => '3.0.9',
+#    passenger_version      => '3.0.21',
 #    passenger_ruby         => '/usr/bin/ruby'
 #    gem_path               => '/var/lib/gems/1.8/gems',
 #    gem_binary_path        => '/var/lib/gems/1.8/bin',
-#    passenger_root         => '/var/lib/gems/1.8/gems/passenger-3.0.9'
-#    mod_passenger_location => '/var/lib/gems/1.8/gems/passenger-3.0.9/ext/apache2/mod_passenger.so',
+#    passenger_root         => '/var/lib/gems/1.8/gems/passenger-3.0.21'
+#    mod_passenger_location => '/var/lib/gems/1.8/gems/passenger-3.0.21/ext/apache2/mod_passenger.so',
 #    passenger_provider     => 'gem',
 #    passenger_package      => 'passenger',
+#    include_build_tools    => 'true',
 #  }
 #
 #
 # Requires:
 #   - apache
 #   - apache::dev
+#
+# Optionally requires
+#   - gcc
+#   - make
 #
 class passenger (
   $gem_binary_path        = $passenger::params::gem_binary_path,
@@ -62,35 +70,33 @@ class passenger (
   $passenger_root         = $passenger::params::passenger_root,
   $passenger_ruby         = $passenger::params::passenger_ruby,
   $passenger_version      = $passenger::params::passenger_version,
-  $compile_passenger      = $passenger::params::compile_passenger
+  $compile_passenger      = $passenger::params::compile_passenger,
+  $include_build_tools    = false,
 ) inherits passenger::params {
-
-  $package_dependencies = $passenger::params::package_dependencies
 
   include '::apache'
   include '::apache::dev'
 
-  class { '::passenger::install':
-    package_name         => $package_name,
-    package_ensure       => $package_ensure,
-    package_provider     => $package_provider,
-    package_dependencies => $package_dependencies
-  }
-  class { '::passenger::config':
-    mod_passenger_location => $mod_passenger_location,
-    passenger_root         => $passenger_root,
-    passenger_ruby         => $passenger_ruby,
-    passenger_version      => $passenger_version,
-  }
+  include '::passenger::install'
+  include '::passenger::config'
 
   if $compile_passenger {
-    class { '::passenger::compile':
-      gem_binary_path        => $gem_binary_path,
-      mod_passenger_location => $mod_passenger_location
-    }
+    class { '::passenger::compile': }
     Class['passenger::install'] ->
     Class['passenger::compile'] ->
     Class['passenger::config']
+  }
+
+  if type($include_build_tools) == 'string' {
+    $include_build_tools_real = str2bool($include_build_tools)
+  } else {
+    $include_build_tools_real = $include_build_tools
+  }
+  validate_bool($include_build_tools_real)
+
+  if $include_build_tools_real == true {
+    require 'gcc'
+    require 'make'
   }
 
   anchor { 'passenger::begin': }
@@ -102,5 +108,6 @@ class passenger (
   Class['passenger::install'] ->
   Class['passenger::config'] ->
   Anchor['passenger::end']
+
 
 }
